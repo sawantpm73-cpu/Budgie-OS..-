@@ -1,1 +1,70 @@
 
+
+name: Build BudgieOS ISO
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build BudgieOS Pro Ultimate
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+
+    steps:
+      - name: Download project
+        uses: actions/checkout@v4
+
+      - name: Build bootable ISO
+        run: |
+          set -euxo pipefail
+
+          mkdir -p output
+
+          docker run --privileged --rm \
+            -v "$PWD:/build" \
+            -w /build \
+            debian:stable-slim \
+            bash -euxo pipefail -c '
+              export DEBIAN_FRONTEND=noninteractive
+
+              apt-get update
+
+              apt-get install -y \
+                live-build \
+                debootstrap \
+                squashfs-tools \
+                xorriso \
+                grub-pc-bin \
+                grub-efi-amd64-bin \
+                mtools \
+                dosfstools \
+                ca-certificates
+
+              chmod +x auto/config
+
+              lb config
+              lb build
+
+              ISO=$(find . -maxdepth 1 -name "*.iso" -type f | head -n 1)
+
+              test -n "$ISO"
+
+              cp "$ISO" output/BudgieOS-Pro-Ultimate-amd64.iso
+
+              sha256sum output/*.iso > output/SHA256SUMS.txt
+            '
+
+      - name: Upload BudgieOS ISO
+        uses: actions/upload-artifact@v4
+        with:
+          name: BudgieOS-Pro-Ultimate-ISO
+          path: output/
+          if-no-files-found: error
+          retention-days: 7
