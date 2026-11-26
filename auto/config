@@ -1,1 +1,19 @@
 
+#!/bin/sh
+set -eu
+
+lb config noauto \
+  --mode debian \
+  --distribution stable \
+  --architectures amd64 \
+  --binary-image iso-hybrid \
+  --archive-areas "main contrib non-free non-free-firmware" \
+  --bootappend-live "boot=live components username=budgie hostname=budgieos" \
+  --iso-application "BudgieOS Pro Ultimate" \
+  --iso-publisher "BudgieOS Project" \
+  --iso-volume "BUDGIEOS" \
+  --image-name "budgieos-pro-ultimate" \
+  --apt-recommends true \
+  --apt-indices false \
+  --memtest none
+
