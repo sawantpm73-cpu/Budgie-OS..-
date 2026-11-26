@@ -1,5 +1,4 @@
 
-
 name: Build BudgieOS ISO
 
 on:
@@ -19,9 +18,12 @@ jobs:
 
     steps:
       - name: Download project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
 
       - name: Build bootable ISO
+        shell: bash
         run: |
           set -euxo pipefail
 
@@ -52,7 +54,7 @@ jobs:
               lb config
               lb build
 
-              ISO=$(find . -maxdepth 1 -name "*.iso" -type f | head -n 1)
+              ISO=$(find . -maxdepth 1 -type f -name "*.iso" | head -n 1)
 
               test -n "$ISO"
 
@@ -62,9 +64,10 @@ jobs:
             '
 
       - name: Upload BudgieOS ISO
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: BudgieOS-Pro-Ultimate-ISO
           path: output/
           if-no-files-found: error
           retention-days: 7
+
